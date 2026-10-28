@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Image Gallery · Internship Project</title>
+<style>
+  :root{
+    --bg:#0d0f14;
+    --panel:#151924;
+    --line:#242a3a;
+    --text:#eef1f8;
+    --muted:#9aa3b8;
+    --accent:#7c5cff;
+    --accent-soft:rgba(124,92,255,.16);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:radial-gradient(1100px 600px at 15% -10%, #1b1f3a 0%, var(--bg) 55%);
+    color:var(--text);
+    font-family:"Segoe UI",system-ui,-apple-system,sans-serif;
+    min-height:100vh;
+  }
+  header{
+    max-width:1200px;margin:0 auto;padding:52px 22px 18px;
+  }
+  .eyebrow{
+    display:inline-block;font-size:12px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--accent);background:var(--accent-soft);border:1px solid rgba(124,92,255,.35);
+    padding:6px 12px;border-radius:999px;margin-bottom:16px;
+  }
+  h1{margin:0 0 10px;font-size:clamp(28px,4.6vw,44px);line-height:1.1;letter-spacing:-.02em}
+  header p{margin:0;color:var(--muted);max-width:60ch;line-height:1.6}
+  .filters{
+    max-width:1200px;margin:26px auto 0;padding:0 22px;
+    display:flex;flex-wrap:wrap;gap:10px;
+  }
+  .chip{
+    border:1px solid var(--line);background:var(--panel);color:var(--muted);
+    padding:9px 16px;border-radius:999px;font-size:13.5px;cursor:pointer;
+    transition:.22s ease;font-family:inherit;
+  }
+  .chip:hover{color:var(--text);border-color:#3a4460;transform:translateY(-1px)}
+  .chip.active{
+    background:var(--accent);border-color:var(--accent);color:#fff;
+    box-shadow:0 8px 22px -10px var(--accent);
+  }
+  .grid{
+    max-width:1200px;margin:22px auto 80px;padding:0 22px;
+    columns:4 220px;column-gap:16px;
+  }
+  .card{
+    position:relative;margin:0 0 16px;border-radius:16px;overflow:hidden;
+    break-inside:avoid;cursor:zoom-in;background:var(--panel);
+    border:1px solid var(--line);
+    animation:rise .45s ease both;
+  }
+  @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  .card img{
+    display:block;width:100%;height:auto;
+    transition:transform .5s ease, filter .4s ease;
+  }
+  .card:hover img{transform:scale(1.06);filter:brightness(.82)}
+  .card figcaption{
+    position:absolute;inset:auto 0 0 0;padding:34px 14px 13px;
+    background:linear-gradient(to top,rgba(6,8,14,.92),transparent);
+    font-size:13.5px;opacity:0;transform:translateY(8px);
+    transition:.3s ease;pointer-events:none;
+  }
+  .card:hover figcaption{opacity:1;transform:none}
+  .card figcaption span{display:block;color:var(--muted);font-size:11.5px;margin-top:3px;letter-spacing:.06em;text-transform:uppercase}
+  .empty{columns:1;text-align:center;color:var(--muted);padding:60px 0}
+
+  /* Lightbox */
+  .lightbox{
+    position:fixed;inset:0;z-index:50;display:none;
+    background:rgba(6,8,14,.94);backdrop-filter:blur(8px);
+    align-items:center;justify-content:center;padding:24px;
+  }
+  .lightbox.open{display:flex}
+  .lb-figure{margin:0;max-width:min(92vw,1000px);text-align:center}
+  .lb-figure img{
+    max-width:100%;max-height:76vh;border-radius:14px;
+    box-shadow:0 30px 80px -30px #000;border:1px solid #2a3145;
+  }
+  .lb-figure figcaption{margin-top:14px;color:var(--muted);font-size:14px}
+  .lb-figure figcaption b{color:var(--text);display:block;font-size:16px;margin-bottom:2px}
+  .lb-btn{
+    position:absolute;top:50%;transform:translateY(-50%);
+    width:46px;height:46px;border-radius:50%;border:1px solid #2f3750;
+    background:rgba(21,25,36,.9);color:var(--text);font-size:20px;cursor:pointer;
+    display:grid;place-items:center;transition:.2s;
+  }
+  .lb-btn:hover{background:var(--accent);border-color:var(--accent)}
+  .lb-prev{left:18px}.lb-next{right:18px}
+  .lb-close{
+    position:absolute;top:18px;right:18px;width:42px;height:42px;border-radius:50%;
+    border:1px solid #2f3750;background:rgba(21,25,36,.9);color:var(--text);
+    font-size:18px;cursor:pointer;display:grid;place-items:center;transition:.2s;
+  }
+  .lb-close:hover{background:#e5484d;border-color:#e5484d}
+  .lb-count{
+    position:absolute;top:24px;left:24px;font-size:12.5px;letter-spacing:.14em;
+    color:var(--muted);text-transform:uppercase;
+  }
+  @media(max-width:640px){
+    .grid{columns:2 140px;column-gap:12px}
+    .lb-prev{left:8px}.lb-next{right:8px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="eyebrow">Project 01</span>
+  <h1>Image Gallery</h1>
+  <p>A responsive masonry gallery with category filters, a full-screen lightbox and full keyboard navigation. Click any photo to open it, then use ← → to browse and Esc to close.</p>
+</header>
+
+<nav class="filters" id="filters" aria-label="Filter photos by category"></nav>
+
+<section class="grid" id="grid" aria-live="polite"></section>
+
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer">
+  <span class="lb-count" id="lbCount">1 / 12</span>
+  <button class="lb-close" id="lbClose" aria-label="Close viewer">&times;</button>
+  <button class="lb-btn lb-prev" id="lbPrev" aria-label="Previous photo">&#10094;</button>
+  <button class="lb-btn lb-next" id="lbNext" aria-label="Next photo">&#10095;</button>
+  <figure class="lb-figure">
+    <img id="lbImg" src="" alt="" />
+    <figcaption><b id="lbTitle"></b><span id="lbCat"></span></figcaption>
+  </figure>
+</div>
+
+<script>
+/* ---------------------------------------------------------------
+   Data — each photo is a seeded placeholder so the gallery always
+   renders real images without shipping any binary files.
+   Swap `seed` for your own image URLs when you add your own shots.
+---------------------------------------------------------------- */
+const PHOTOS = [
+  { seed: "canyon-01",  title: "Layered Canyon",   cat: "Nature" },
+  { seed: "tower-02",   title: "Glass Tower",      cat: "Architecture" },
+  { seed: "portrait-03",title: "Golden Hour",      cat: "People" },
+  { seed: "paint-04",   title: "Chromatic Study",  cat: "Abstract" },
+  { seed: "forest-05",  title: "Misty Pines",      cat: "Nature" },
+  { seed: "bridge-06",  title: "Steel Span",       cat: "Architecture" },
+  { seed: "street-07",  title: "Old Town Walk",    cat: "People" },
+  { seed: "lines-08",   title: "Parallel Lines",   cat: "Abstract" },
+  { seed: "desert-09",  title: "Dune Ridges",      cat: "Nature" },
+  { seed: "atrium-10",  title: "Sunlit Atrium",    cat: "Architecture" },
+  { seed: "smile-11",   title: "Candid Laugh",     cat: "People" },
+  { seed: "prism-12",   title: "Prism Bloom",      cat: "Abstract" }
+];
+
+const imgUrl = (seed, w, h) => `https://picsum.photos/seed/${seed}/${w}/${h}`;
+
+const grid     = document.getElementById("grid");
+const filters  = document.getElementById("filters");
+const lightbox = document.getElementById("lightbox");
+const lbImg    = document.getElementById("lbImg");
+const lbTitle  = document.getElementById("lbTitle");
+const lbCat    = document.getElementById("lbCat");
+const lbCount  = document.getElementById("lbCount");
+
+let activeCat = "All";
+let visible   = [...PHOTOS];
+let current   = 0;
+
+/* ---- filters ---- */
+const categories = ["All", ...new Set(PHOTOS.map(p => p.cat))];
+categories.forEach(cat => {
+  const btn = document.createElement("button");
+  btn.className = "chip" + (cat === "All" ? " active" : "");
+  btn.textContent = cat;
+  btn.setAttribute("aria-pressed", cat === "All");
+  btn.addEventListener("click", () => setFilter(cat));
+  filters.appendChild(btn);
+});
+
+function setFilter(cat){
+  activeCat = cat;
+  [...filters.children].forEach(b => {
+    const on = b.textContent === cat;
+    b.classList.toggle("active", on);
+    b.setAttribute("aria-pressed", on);
+  });
+  render();
+}
+
+/* ---- grid ---- */
+function render(){
+  visible = activeCat === "All" ? [...PHOTOS] : PHOTOS.filter(p => p.cat === activeCat);
+  grid.innerHTML = "";
+
+  if (!visible.length){
+    grid.innerHTML = '<p class="empty">No photos in this category.</p>';
+    return;
+  }
+
+  visible.forEach((photo, i) => {
+    const fig = document.createElement("figure");
+    fig.className = "card";
+    fig.style.animationDelay = (i * 45) + "ms";
+    fig.innerHTML = `
+      <img src="${imgUrl(photo.seed, 600, 0)}" alt="${photo.title}" loading="lazy" />
+      <figcaption>${photo.title}<span>${photo.cat}</span></figcaption>
+    `;
+    fig.addEventListener("click", () => openLightbox(i));
+    grid.appendChild(fig);
+  });
+}
+
+/* ---- lightbox ---- */
+function openLightbox(index){
+  current = index;
+  paint();
+  lightbox.classList.add("open");
+  document.body.style.overflow = "hidden";
+  document.getElementById("lbClose").focus();
+}
+
+function paint(){
+  const photo = visible[current];
+  lbImg.src = imgUrl(photo.seed, 1200, 800);
+  lbImg.alt = photo.title;
+  lbTitle.textContent = photo.title;
+  lbCat.textContent = photo.cat;
+  lbCount.textContent = `${current + 1} / ${visible.length}`;
+}
+
+function step(dir){
+  current = (current + dir + visible.length) % visible.length;
+  paint();
+}
+
+function closeLightbox(){
+  lightbox.classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+document.getElementById("lbClose").addEventListener("click", closeLightbox);
+document.getElementById("lbPrev").addEventListener("click", () => step(-1));
+document.getElementById("lbNext").addEventListener("click", () => step(1));
+lightbox.addEventListener("click", e => { if (e.target === lightbox) closeLightbox(); });
+
+/* ---- keyboard support ---- */
+document.addEventListener("keydown", e => {
+  if (!lightbox.classList.contains("open")) return;
+  if (e.key === "Escape")     closeLightbox();
+  if (e.key === "ArrowLeft")  step(-1);
+  if (e.key === "ArrowRight") step(1);
+});
+
+render();
+</script>
+</body>
+</html>
