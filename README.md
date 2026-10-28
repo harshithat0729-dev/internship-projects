@@ -1,156 +1,201 @@
 # Internship Projects
 
-Four self-contained front-end projects built during my internship, each in a single HTML
-file with its CSS and JavaScript inline. No build step, no dependencies, no install — open
-any file in a browser and it runs.
+Four front-end projects from my internship, each built as a **single self-contained HTML
+file** — markup, CSS and JavaScript all in one place. No framework, no build step, no
+`npm install`. Open a file in a browser and it runs.
 
-**Author:** Harshitha Thummala · [harshithat0729@gmail.com](mailto:harshithat0729@gmail.com)
+**Harshitha Thummala** · BSc. Artificial Intelligence student
+[harshithat0729@gmail.com](mailto:harshithat0729@gmail.com) ·
+[LinkedIn](https://www.linkedin.com/in/harshitha-thummala-312bb239b)
 
 ---
 
 ## Contents
 
-| # | File | Project | What it is |
-|---|------|---------|------------|
-| 01 | `image-gallery.html` | Image Gallery | Filterable masonry photo gallery with a lightbox viewer |
-| 02 | `calcio.html` | Calcio | Keyboard-first calculator with live preview and history |
-| 03 | `portfolio.html` | Portfolio | This portfolio site — hero, skills, projects, contact |
-| 04 | `sonify.html` | Sonify | Music player with live-synthesised tracks and a spectrum display |
+| # | File in this repo | Original file | Project |
+|---|-------------------|---------------|---------|
+| 01 | `image-gallery.html` | `Final_Image_Gallery.html` | Image Gallery — live photo gallery of Indian landmarks, nature, festivals and more |
+| 02 | `calcio.html` | `calcio.html` | Calcio — scientific calculator with graph, matrix, calculus tools and an AI tutor |
+| 03 | `portfolio.html` | `Harshitha_Portfolio_Single_6.html` | Portfolio — personal site with projects, skills, certifications and contact |
+| 04 | `sonify.html` | `sonify.html` | Sonify — music player that plays your own local files, with themes and a persisted library |
 
-Open `portfolio.html` first — it links to the other three.
+Start with `portfolio.html` — it is the front door to the other three.
 
 ---
 
 ## 1. Image Gallery — `image-gallery.html`
 
-**What the code does**
-- Photo data lives in one `PHOTOS` array (seed, title, category). The gallery is rendered
-  from that array, so adding a photo means adding one object — no HTML editing.
-- A masonry layout built with CSS `columns`, so images keep their natural aspect ratio and
-  reflow from four columns on desktop down to two on a phone.
-- Lightbox loads a larger version of the same photo, with a title, category and an
-  `n / total` counter.
+A gallery of 32 Indian photographs organised into eight collections: **Landmarks, Nature,
+Festivals, Food, Architecture, Wildlife, Beaches and Culture**, four entries each.
 
 **Features**
-- Category filter chips generated automatically from the data (All, Nature, Architecture,
-  People, Abstract) with an active state and `aria-pressed`.
-- Full-screen lightbox with blurred backdrop.
-- Previous / next buttons that wrap around at both ends.
-- Keyboard control: `←` `→` to browse, `Esc` to close.
-- Click the dark backdrop to close; body scroll is locked while the viewer is open.
-- Staggered fade-up animation on load, hover zoom and a caption that slides in.
-- Lazy loading on every image (`loading="lazy"`).
 
-**Functionality**
-`setFilter()` re-renders the grid from the filtered array and resets the lightbox index.
-`openLightbox()` / `step()` keep a `current` pointer into the visible list, so browsing only
-ever moves through photos in the selected category.
+- **Live photos, no binaries in the repo.** Every photo is fetched at runtime from the
+  Wikimedia Commons API (`action=query`, `generator=search`) using a per-item search query,
+  then cached in memory so the same image is never fetched twice.
+- **Category filters** generated from the data itself, plus an **All** view.
+- **Search box** that filters on title and category as you type.
+- **Favourites** — heart any photo; the list is saved in `localStorage` (`gallery_favs`) and
+  a "Favs" toggle shows only your saved photos.
+- **Shuffle** button for a randomised view.
+- **Light/dark theme** toggle, remembered in `localStorage` (`gallery_theme`).
+- **Detail modal** per photo: large image, title, category, a short description, a link to
+  the image's source on Wikimedia Commons, and a **Download image** button.
+- Graceful loading states — "Loading photo…", "Photo unavailable", "Unable to load photo" —
+  instead of broken image icons.
+
+**How it works**
+
+All content lives in one `collections` array of `{category, items}`, where each item is
+`[title, searchQuery, description]`. `createFilters()` builds the filter row from that array,
+`renderGallery()` applies the category, search term and favourites filters together,
+`loadImage()` handles the Commons request and caching, and `openModal()` fills the modal and
+sets the source and download links.
+
+**Note:** because photos come from Wikimedia Commons, this project needs an internet
+connection. The layout, filters, favourites and theming all work offline.
 
 ---
 
 ## 2. Calcio — `calcio.html`
 
-**What the code does**
-- The expression is kept as a plain string. Numbers, operators and the decimal point are
-  appended to it; the result is only computed for display, never stored.
-- `sanitize()` strips every character except digits, `.`, `+ - * /` before anything is
-  evaluated, so the string handed to the evaluator can never contain executable code.
-- Results are rounded to 12 decimal places to avoid floating-point noise like
-  `0.30000000000000004`.
+A scientific calculator that goes well past arithmetic: a proper expression engine, a set of
+maths tools, and an AI tutor chat panel beside it.
 
 **Features**
-- Live preview: the running result appears faintly while you type, and turns solid on `=`.
-- Calculation history panel (last 30 entries) — click any entry to reuse its result.
-- "Clear" button for the history, "AC" for the current expression.
-- Sign toggle (±), percent (÷100 of the last number), backspace.
-- Division-by-zero and malformed expressions show `Invalid expression` instead of crashing.
-- Full keyboard support: `0-9`, `.`, `+ - * /`, `Enter`/`=` to evaluate, `Backspace`,
-  `Esc` to clear, `%`.
-- Operator replacement — pressing `+` then `×` swaps the operator instead of stacking it.
 
-**Functionality**
-`evaluate()` returns `null` for anything unusable, which the UI treats as "no preview yet".
-`equals()` pushes `{expression, result}` onto the history array, re-renders the list and
-leaves the answer on screen so the next keypress starts a fresh calculation.
+- **Scientific calculator** — full expression input with brackets, powers, `log`, `ln`, trig,
+  factorials, `nCr` / `nPr`, `π` and `e`, a **DEG / RAD** switch and an **S⇔D** button that
+  flips the answer between decimal and fraction.
+- **Calculation history** panel, with light and dark modes.
+- **Graph tab** — plot up to three functions of `x`, drag to pan, zoom in and out.
+- **Matrix tab** — set the sizes of A and B, fill in values, then multiply, take the
+  determinant or invert (with a guard for singular matrices).
+- **Equations tab** — solve quadratics from `a`, `b`, `c`, reporting real or complex roots
+  from the discriminant.
+- **More tools** — definite integrals (`∫ a→b`), derivatives at a point (`d/dx at a`),
+  summations (`Σ a→b`) and a function table.
+- **Vector tools** — dot product, cross product and angle between vectors.
+- **Statistics** (mean, standard deviation), unit conversion, base conversion.
+- **AI tutor chat** — ask a question and get a step-by-step explanation.
+  - With no API key it answers from a built-in FAQ knowledge base covering standard
+    deviation, matrices, DEG vs RAD, quadratics, fractions, graphs, calculus, permutations
+    and logarithms — fully offline.
+  - With a key it calls the Anthropic Messages API (`api.anthropic.com/v1/messages`) for a
+    full answer. The key is typed into the input field at runtime and is **never stored or
+    bundled in the file** — reload the page and it is gone.
+- The tutor is context-aware: it is told the current expression and the last answer.
+
+**How it works**
+
+The expression is tokenised and prepared by `prep()` and evaluated by `ev()`, with `calc()`
+driving the display. Each tool panel is a function of its own (`quad`, `sim`, `integ`,
+`deriv`, `sigma`, `table`, `roots`, `cx`, `vec`, `unit`, `stats`, `base`), and `ask()` routes
+a chat message to `faq()` or `apiAsk()` depending on whether a key was supplied.
 
 ---
 
 ## 3. Portfolio — `portfolio.html`
 
-**What the code does**
-- A single-page portfolio: sticky nav, hero with an intro card, about, skills, project
-  cards and a contact form.
-- Theming is done with CSS custom properties — `body.dark` swaps one set of variables, and
-  the choice is remembered in `localStorage`.
-- All motion is driven by an `IntersectionObserver`, so nothing animates off-screen.
+My personal site — a single page covering who I am, what I work with, what I have built and
+how to reach me.
 
 **Features**
-- Light / dark theme toggle, remembered between visits.
-- Scroll-reveal on every section, and skill bars that animate to their value the first time
-  they come into view.
-- Responsive layout with a hamburger menu under 860px; links close the menu on tap.
-- Project cards that open the other three projects in this repository.
-- Contact form with client-side validation (name, message, email pattern) and a toast
-  confirmation.
-- Direct email and GitHub links; smooth scrolling with `scroll-margin` so anchors don't
-  hide under the sticky nav.
 
-**Functionality**
-The form is front-end only — it validates and confirms, but does not send anywhere, which
-is why the toast says so. Wiring it to a real endpoint (Formspree, a serverless function,
-or `mailto:`) is a one-line change in the submit handler.
+- **Hero** with name, degree (BSc. Artificial Intelligence) and an embedded avatar image.
+- **About** section, written in plain language.
+- **Skills** grouped into four panels: Programming, Web Development, AI & Data, Tools &
+  Platforms.
+- **Projects** — the Lab Tracker Website (lab attendance with check-in/check-out timings),
+  Calcio (the calculator above), a Python AI Chatbot and a Scam Message Detector, plus a note
+  on 30+ smaller Python projects (Smart File Organizer, Data Cleaner, Text Analyzer, Weather
+  Prediction System, Password Strength Analyzer).
+- **Certifications & awards** — Kaggle Python course, Microsoft Fundamentals & Libraries of
+  Python, Web Blitz participation certificate, plus awards in essay writing, throwball and
+  kabaddi, and academics.
+- **Languages** — Telugu, English, Hindi.
+- **Contact cards** — email, phone and LinkedIn.
+- **Dark / light theme** that follows the system preference by default and remembers an
+  explicit choice in `localStorage`.
+- **Mobile menu** and **scroll-reveal** animations on every section.
+
+**How it works**
+
+The whole site is one HTML file with an inline stylesheet built on CSS custom properties, so
+theming is a single `data-theme` attribute on the root element. A small inline script handles
+the theme toggle, the mobile navigation, and the reveal-on-scroll behaviour (via
+`IntersectionObserver`). The only external request is the Inter webfont from Google Fonts.
 
 ---
 
 ## 4. Sonify — `sonify.html`
 
-**What the code does**
-- There are no audio files. Each track is a list of `[MIDI note, length in beats]` pairs,
-  and the player schedules oscillators with the **Web Audio API** to play them.
-- `buildTimeline()` converts a melody into absolute note start times and a total duration,
-  which drives the seek bar and the time readout.
-- `scheduleFrom(offset)` schedules only the notes still ahead of the playhead, so seeking
-  mid-track restarts the schedule at exactly that point rather than replaying from zero.
-- An `AnalyserNode` sits between the master gain and the speakers and feeds a canvas that
-  draws the frequency spectrum.
+A full music player in the browser that plays **your own audio files**, not just a fixed
+playlist.
 
 **Features**
-- Play / pause, previous, next, shuffle and repeat.
-- Seek bar that works both while paused and mid-playback.
-- Volume slider wired to a single master gain node.
-- Live spectrum visualiser with a per-track colour gradient.
-- Playlist panel with per-track mood and duration; click any row to jump to it.
-- Per-track artwork colour and oscillator waveform (sawtooth, triangle, sine, square) give
-  each of the four tracks its own character.
-- Keyboard shortcuts: `Space` play/pause, `←` `→` previous/next.
-- Auto-advance to the next track when one finishes; respects repeat and shuffle.
 
-**Functionality**
-Pause calls `AudioContext.suspend()`, which freezes the audio clock, so elapsed time is
-preserved exactly and resume continues where it stopped. Playback position is always
-`offset + (ctx.currentTime - startedAt)`, which is what the seek bar reads each frame.
+- **Local library.** Add songs three ways: the file picker, drag-and-drop anywhere on the
+  window, or the "Add from Downloads" flow. Supported formats: `mp3, m4a, aac, wav, ogg,
+  oga, flac, opus, wma`.
+- **Real metadata.** `parseID3()` and `parseAPIC()` read ID3v2 tags — title (`TIT2`), artist
+  (`TPE1`), album (`TALB`), year (`TYER` / `TDRC`) — and extract the embedded cover art. If a
+  file has no tags, `guessFromFilename()` falls back to a sensible title/artist split.
+- **Library survives a reload.** Tracks and covers are stored in **IndexedDB**
+  (database `sonify-player`, store `local-tracks`) and restored on load via
+  `restoreLocalTracks()`. Removing a track deletes it from the database too.
+- **Playlists and favourites** persisted separately (`sonify-playlists-v1`,
+  `sonify-favourites-v1`), plus player settings in `sonify-settings`.
+- **Transport** — play/pause, next, previous, shuffle, repeat, seek bar, volume with icon
+  feedback, and a large central play button.
+- **Themes.** Six built-in palettes — plain dark, aurora, sunset, ocean, candy, mono — plus
+  an **auto** mode that samples the dominant hue of the current cover art
+  (`extractHue()` / `rgbToHsl()`) and repaints the whole UI, including a full-bleed ambient
+  backdrop, in that colour.
+- **Per-track styling** — each song gets a generated cover when art is missing
+  (`placeholderCover()`, and the `lakeBg` / `concertBg` / `neonBg` / `sunsetBg` / `vinylBg`
+  generators) and its own visual style.
+- **Demo track included** — "Morning Drift" ships embedded as base64 audio so the player has
+  something to play the moment it opens.
+- **Keyboard shortcuts** — `Space` play/pause, `←` `→` seek ±5 s, `↑` `↓` volume, `n` next,
+  `p` previous, `m` mute, `s` shuffle, `r` repeat, `t` timer. All are listed in the in-app
+  Shortcuts panel.
+- Responsive glass UI, built for both desktop and phone widths.
+
+**How it works**
+
+A single `<audio>` element is the engine. `addLocalFiles()` / `addSingleFile()` read a file
+into a blob URL, pull the ID3 tags and cover, probe the duration (`probeDuration()`) and push
+the track into `state.tracks`; `dbPut()` writes it to IndexedDB. Playback, queue order
+(`refreshOrder()`), repeat/shuffle modes and the theme are all derived from that one state
+object, and `saveSettings()` mirrors the parts worth keeping into `localStorage`.
+
+**Note:** because it is a 2 MB file, most of the size is the embedded demo audio and cover
+data, not code. Everything runs client-side — no server, no uploads.
 
 ---
 
-## Tech used across all four
+## Tech used
 
-Plain **HTML5, CSS3 and JavaScript (ES6+)** — no frameworks, no bundlers, no external
-libraries. Browser APIs used: Canvas 2D, Web Audio API, IntersectionObserver, localStorage,
-CSS custom properties, CSS Grid and multi-column layout.
+Plain **HTML5, CSS3 and modern JavaScript (ES6+)** throughout. Browser APIs in play:
+`fetch` (Wikimedia Commons API), `localStorage`, **IndexedDB**, the **Canvas 2D** API,
+`IntersectionObserver`, `File` / `Blob` URLs, the `<audio>` element, and CSS custom properties
+with Grid and Flexbox. One optional external service: the Anthropic Messages API, used only
+when you paste your own key into Calcio's tutor.
 
 ## Running locally
 
 ```bash
 git clone https://github.com/harshithat0729-dev/internship-projects.git
 cd internship-projects
-open portfolio.html      # or: xdg-open portfolio.html
 ```
 
-Or simply double-click any `.html` file. A local server is optional, but handy:
+Then open any file directly, or serve the folder (recommended — IndexedDB, file pickers and
+API calls behave more consistently over `http://`):
 
 ```bash
 python3 -m http.server 8000
-# then visit http://localhost:8000
+# visit http://localhost:8000/portfolio.html
 ```
 
 ## Repository structure
@@ -166,8 +211,9 @@ internship-projects/
 
 ## Notes
 
-- The gallery uses seeded placeholder photos (`picsum.photos`) so the repository ships no
-  binaries. Replace the `seed` values with your own image URLs when you add real shots.
-- The calculator evaluates a sanitised arithmetic string; it is not a general-purpose
-  expression parser, so it deliberately accepts nothing beyond `+ - * /`.
-- The contact form is a UI demo with validation — no backend is attached.
+- The gallery loads its photos live from Wikimedia Commons, so it needs a connection; all
+  images remain the property of their original Commons uploaders.
+- Calcio's AI tutor works offline from its FAQ knowledge base. A live answer needs your own
+  Anthropic API key, entered at runtime and never saved in the file.
+- Sonify keeps your music in the browser's IndexedDB — it never leaves your device, and
+  clearing site data clears the library.
