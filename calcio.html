@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Calcio · Calculator · Internship Project</title>
+<style>
+  :root{
+    --bg:#0b0d12;
+    --pad:#161a24;
+    --key:#1e2331;
+    --key-hi:#2a3145;
+    --line:#262d3d;
+    --text:#f2f5fc;
+    --muted:#8e97ad;
+    --accent:#4ade80;
+    --accent-2:#22d3ee;
+    --danger:#f87171;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;min-height:100vh;display:grid;place-items:center;
+    background:radial-gradient(900px 500px at 80% 0%, #16202c 0%, var(--bg) 60%);
+    color:var(--text);font-family:"Segoe UI",system-ui,sans-serif;padding:24px;
+  }
+  .wrap{
+    display:grid;grid-template-columns:minmax(280px,360px) 220px;gap:18px;
+    align-items:start;max-width:100%;
+  }
+  .calc{
+    background:linear-gradient(180deg,#1a1f2b,#12151d);
+    border:1px solid var(--line);border-radius:22px;padding:18px;
+    box-shadow:0 40px 80px -40px #000;
+  }
+  .brand{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .brand h1{font-size:15px;margin:0;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent)}
+  .screen{
+    background:#0c0f16;border:1px solid #1d2331;border-radius:16px;
+    padding:16px 18px;text-align:right;margin-bottom:16px;min-height:104px;
+    display:flex;flex-direction:column;justify-content:flex-end;gap:6px;
+  }
+  .expr{font-size:14px;color:var(--muted);min-height:20px;word-break:break-all;line-height:1.4}
+  .result{
+    font-size:clamp(26px,7vw,38px);font-weight:600;letter-spacing:-.02em;
+    word-break:break-all;line-height:1.1;
+  }
+  .result.error{color:var(--danger);font-size:20px}
+  .keys{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  button.key{
+    font-family:inherit;font-size:18px;color:var(--text);
+    background:var(--key);border:1px solid #262d3d;border-radius:14px;
+    height:58px;cursor:pointer;transition:.16s ease;user-select:none;
+  }
+  button.key:hover{background:var(--key-hi);transform:translateY(-1px)}
+  button.key:active{transform:translateY(1px) scale(.98)}
+  .key.op{color:var(--accent-2)}
+  .key.fn{color:var(--muted);font-size:15px}
+  .key.eq{
+    background:linear-gradient(135deg,var(--accent),#16a34a);
+    border-color:transparent;color:#04140a;font-weight:700;
+  }
+  .key.eq:hover{filter:brightness(1.08)}
+  .key.wide{grid-column:span 2}
+  .hint{margin:14px 2px 0;font-size:11.5px;color:#5f6880;line-height:1.5}
+
+  .history{
+    background:var(--pad);border:1px solid var(--line);border-radius:18px;
+    padding:14px;display:flex;flex-direction:column;max-height:470px;
+  }
+  .history h2{
+    font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);
+    margin:0 0 10px;display:flex;justify-content:space-between;align-items:center;
+  }
+  .history h2 button{
+    background:none;border:none;color:#5f6880;font-size:11px;cursor:pointer;
+    font-family:inherit;letter-spacing:.06em;text-transform:uppercase;
+  }
+  .history h2 button:hover{color:var(--danger)}
+  .hlist{overflow-y:auto;display:flex;flex-direction:column;gap:8px;font-size:13px}
+  .hitem{
+    background:#11151f;border:1px solid #212838;border-radius:10px;padding:8px 10px;
+    cursor:pointer;transition:.16s;
+  }
+  .hitem:hover{border-color:var(--accent-2)}
+  .hitem .e{color:var(--muted);font-size:11.5px;display:block;margin-bottom:2px}
+  .hitem .r{font-weight:600}
+  .hitem.empty{color:#5f6880;cursor:default;border-style:dashed;text-align:center;padding:18px 10px}
+  .hitem.empty:hover{border-color:#212838}
+  @media(max-width:720px){
+    .wrap{grid-template-columns:1fr}
+    .history{max-height:200px}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <section class="calc" aria-label="Calculator">
+    <div class="brand"><h1>Calcio</h1><span class="dot"></span></div>
+
+    <div class="screen">
+      <div class="expr" id="expr">0</div>
+      <div class="result" id="result" aria-live="polite">0</div>
+    </div>
+
+    <div class="keys" id="keys">
+      <button class="key fn" data-action="clear">AC</button>
+      <button class="key fn" data-action="sign">&plusmn;</button>
+      <button class="key fn" data-action="percent">%</button>
+      <button class="key op" data-op="/">&divide;</button>
+
+      <button class="key" data-num="7">7</button>
+      <button class="key" data-num="8">8</button>
+      <button class="key" data-num="9">9</button>
+      <button class="key op" data-op="*">&times;</button>
+
+      <button class="key" data-num="4">4</button>
+      <button class="key" data-num="5">5</button>
+      <button class="key" data-num="6">6</button>
+      <button class="key op" data-op="-">&minus;</button>
+
+      <button class="key" data-num="1">1</button>
+      <button class="key" data-num="2">2</button>
+      <button class="key" data-num="3">3</button>
+      <button class="key op" data-op="+">+</button>
+
+      <button class="key fn" data-action="backspace">&#9003;</button>
+      <button class="key" data-num="0">0</button>
+      <button class="key" data-num=".">.</button>
+      <button class="key eq" data-action="equals">=</button>
+    </div>
+
+    <p class="hint">Tip: type on your keyboard too — numbers, + &minus; * / , Enter for = , Backspace to delete, Esc to clear.</p>
+  </section>
+
+  <aside class="history">
+    <h2>History <button id="clearHistory">Clear</button></h2>
+    <div class="hlist" id="hlist"></div>
+  </aside>
+</div>
+
+<script>
+const exprEl   = document.getElementById("expr");
+const resultEl = document.getElementById("result");
+const hlist    = document.getElementById("hlist");
+
+let expression = "";
+let history    = [];
+let justEvaluated = false;
+
+const SYMBOL = { "*": "×", "/": "÷", "-": "−", "+": "+" };
+
+function pretty(text){
+  return text.replace(/\*/g, "×").replace(/\//g, "÷").replace(/-/g, "−");
+}
+
+/* Only digits, dots and the four operators are ever allowed through,
+   so the evaluated string can never contain anything executable. */
+function sanitize(text){
+  return text.replace(/[^0-9+\-*/.()]/g, "");
+}
+
+function evaluate(text){
+  const clean = sanitize(text).replace(/[+\-*/.]+$/, "");
+  if (!clean) return null;
+  if (/^[*/]/.test(clean)) return null;
+  try {
+    const value = Function('"use strict";return (' + clean + ')')();
+    if (!Number.isFinite(value)) return null;
+    return Math.round(value * 1e12) / 1e12;
+  } catch {
+    return null;
+  }
+}
+
+function paint(){
+  exprEl.textContent = expression ? pretty(expression) : "0";
+
+  if (justEvaluated){
+    return; // result already painted by equals()
+  }
+
+  const preview = evaluate(expression);
+  resultEl.classList.remove("error");
+  if (expression && preview !== null && /[+\-*/]/.test(expression.slice(1))){
+    resultEl.textContent = preview;
+    resultEl.style.opacity = .65;
+  } else {
+    resultEl.textContent = expression || "0";
+    resultEl.style.opacity = 1;
+  }
+}
+
+function addNumber(n){
+  if (justEvaluated){
+    expression = "";
+    justEvaluated = false;
+  }
+  // stop a second decimal point inside the same number
+  if (n === "."){
+    const tail = expression.split(/[+\-*/]/).pop();
+    if (tail.includes(".")) return;
+    if (!tail) n = "0.";
+  }
+  expression += n;
+  resultEl.style.opacity = 1;
+  paint();
+}
+
+function addOperator(op){
+  if (justEvaluated) justEvaluated = false;
+  if (!expression){
+    if (op === "-") { expression = "-"; paint(); }
+    return;
+  }
+  if (/[+\-*/]$/.test(expression)){
+    expression = expression.slice(0, -1) + op;
+  } else {
+    expression += op;
+  }
+  paint();
+}
+
+function backspace(){
+  if (justEvaluated){ justEvaluated = false; }
+  expression = expression.slice(0, -1);
+  paint();
+}
+
+function clearAll(){
+  expression = "";
+  justEvaluated = false;
+  resultEl.classList.remove("error");
+  resultEl.style.opacity = 1;
+  paint();
+}
+
+function toggleSign(){
+  if (!expression) return;
+  const match = expression.match(/(-?\d*\.?\d+)$/);
+  if (!match) return;
+  const tail = match[1];
+  const start = expression.length - tail.length;
+  const flipped = tail.startsWith("-") ? tail.slice(1) : "-" + tail;
+  expression = expression.slice(0, start) + flipped;
+  paint();
+}
+
+function percent(){
+  if (!expression) return;
+  const match = expression.match(/(-?\d*\.?\d+)$/);
+  if (!match) return;
+  const tail = match[1];
+  const start = expression.length - tail.length;
+  const value = parseFloat(tail) / 100;
+  expression = expression.slice(0, start) + value;
+  paint();
+}
+
+function equals(){
+  const value = evaluate(expression);
+  if (value === null){
+    resultEl.textContent = "Invalid expression";
+    resultEl.classList.add("error");
+    resultEl.style.opacity = 1;
+    return;
+  }
+  const entry = { expression: pretty(sanitize(expression)), result: value };
+  history.unshift(entry);
+  history = history.slice(0, 30);
+  renderHistory();
+
+  resultEl.textContent = value;
+  resultEl.classList.remove("error");
+  resultEl.style.opacity = 1;
+  exprEl.textContent = entry.expression;
+  expression = String(value);
+  justEvaluated = true;
+}
+
+function renderHistory(){
+  if (!history.length){
+    hlist.innerHTML = '<div class="hitem empty">No calculations yet</div>';
+    return;
+  }
+  hlist.innerHTML = "";
+  history.forEach(item => {
+    const div = document.createElement("div");
+    div.className = "hitem";
+    div.innerHTML = `<span class="e">${item.expression} =</span><span class="r">${item.result}</span>`;
+    div.title = "Click to reuse this result";
+    div.addEventListener("click", () => {
+      expression = String(item.result);
+      justEvaluated = false;
+      paint();
+    });
+    hlist.appendChild(div);
+  });
+}
+
+/* ---- wiring ---- */
+document.getElementById("keys").addEventListener("click", e => {
+  const btn = e.target.closest("button.key");
+  if (!btn) return;
+  if (btn.dataset.num) return addNumber(btn.dataset.num);
+  if (btn.dataset.op)  return addOperator(btn.dataset.op);
+  const action = btn.dataset.action;
+  if (action === "clear")     clearAll();
+  if (action === "backspace") backspace();
+  if (action === "sign")      toggleSign();
+  if (action === "percent")   percent();
+  if (action === "equals")    equals();
+});
+
+document.getElementById("clearHistory").addEventListener("click", () => {
+  history = [];
+  renderHistory();
+});
+
+document.addEventListener("keydown", e => {
+  const k = e.key;
+  if (/^[0-9.]$/.test(k)) { addNumber(k); e.preventDefault(); return; }
+  if (["+", "-", "*", "/"].includes(k)) { addOperator(k); e.preventDefault(); return; }
+  if (k === "Enter" || k === "=") { equals(); e.preventDefault(); return; }
+  if (k === "Backspace") { backspace(); e.preventDefault(); return; }
+  if (k === "Escape") { clearAll(); return; }
+  if (k === "%") { percent(); e.preventDefault(); }
+});
+
+renderHistory();
+paint();
+</script>
+</body>
+</html>
