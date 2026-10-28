@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sonify · Music Player · Internship Project</title>
+<style>
+  :root{
+    --bg:#08090f;
+    --card:#12141f;
+    --line:#222536;
+    --text:#f1f3fb;
+    --muted:#8b93ad;
+    --pink:#ff5d8f;
+    --violet:#8b5cf6;
+    --cyan:#22d3ee;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;min-height:100vh;padding:32px 20px 48px;
+    background:
+      radial-gradient(800px 420px at 12% 0%, #2a1240 0%, transparent 60%),
+      radial-gradient(700px 420px at 88% 8%, #0d2a3a 0%, transparent 55%),
+      var(--bg);
+    color:var(--text);font-family:"Segoe UI",system-ui,sans-serif;
+    display:flex;justify-content:center;
+  }
+  .app{
+    width:100%;max-width:940px;display:grid;
+    grid-template-columns:340px 1fr;gap:22px;align-items:start;
+  }
+  .player{
+    background:linear-gradient(180deg,#191c2b,#101320);
+    border:1px solid var(--line);border-radius:24px;padding:22px;
+    box-shadow:0 40px 90px -50px #000;position:sticky;top:24px;
+  }
+  .art{
+    aspect-ratio:1;border-radius:18px;position:relative;overflow:hidden;
+    display:grid;place-items:center;margin-bottom:18px;
+    background:linear-gradient(140deg,var(--violet),var(--pink));
+    transition:background .5s ease;
+  }
+  .art::after{
+    content:"";position:absolute;inset:0;
+    background:radial-gradient(circle at 30% 25%, rgba(255,255,255,.35), transparent 55%);
+  }
+  .art .glyph{
+    font-size:64px;position:relative;z-index:1;opacity:.92;
+    filter:drop-shadow(0 8px 20px rgba(0,0,0,.45));
+  }
+  .meta{text-align:center;margin-bottom:16px}
+  .meta h1{margin:0 0 4px;font-size:19px;letter-spacing:-.01em}
+  .meta p{margin:0;color:var(--muted);font-size:13px}
+  canvas#viz{
+    width:100%;height:58px;display:block;margin-bottom:12px;opacity:.9;
+  }
+  .seek{
+    width:100%;-webkit-appearance:none;appearance:none;height:5px;border-radius:99px;
+    background:#262a3d;outline:none;cursor:pointer;
+  }
+  .seek::-webkit-slider-thumb{
+    -webkit-appearance:none;width:14px;height:14px;border-radius:50%;
+    background:var(--text);box-shadow:0 0 0 4px rgba(139,92,246,.35);cursor:pointer;
+  }
+  .seek::-moz-range-thumb{
+    width:14px;height:14px;border:none;border-radius:50%;background:var(--text);
+    box-shadow:0 0 0 4px rgba(139,92,246,.35);cursor:pointer;
+  }
+  .times{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin:7px 2px 16px;font-variant-numeric:tabular-nums}
+  .controls{display:flex;align-items:center;justify-content:center;gap:16px}
+  .ctrl{
+    background:none;border:none;color:var(--muted);cursor:pointer;
+    width:40px;height:40px;border-radius:50%;display:grid;place-items:center;
+    font-size:15px;transition:.18s;font-family:inherit;
+  }
+  .ctrl:hover{color:var(--text);background:#1e2233}
+  .ctrl.on{color:var(--cyan)}
+  .play{
+    width:58px;height:58px;border-radius:50%;border:none;cursor:pointer;
+    background:linear-gradient(135deg,var(--pink),var(--violet));
+    color:#fff;font-size:20px;display:grid;place-items:center;
+    box-shadow:0 14px 30px -12px var(--violet);transition:.18s;
+  }
+  .play:hover{transform:scale(1.06)}
+  .play:active{transform:scale(.97)}
+  .volume{display:flex;align-items:center;gap:10px;margin-top:18px}
+  .volume span{font-size:14px;color:var(--muted)}
+  .volume input{flex:1;accent-color:var(--pink)}
+
+  .side h2{
+    font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 12px;font-weight:600;
+  }
+  .list{display:flex;flex-direction:column;gap:9px}
+  .track{
+    display:flex;align-items:center;gap:13px;padding:11px 13px;border-radius:14px;
+    border:1px solid var(--line);background:#101320;cursor:pointer;transition:.18s;
+  }
+  .track:hover{background:#151a29;transform:translateX(2px)}
+  .track.active{border-color:var(--pink);background:#1a1424}
+  .track .num{
+    width:26px;height:26px;border-radius:8px;display:grid;place-items:center;
+    font-size:11.5px;color:var(--muted);background:#1b1f2f;flex:none;
+  }
+  .track.active .num{background:var(--pink);color:#fff}
+  .track .info{flex:1;min-width:0}
+  .track .info b{display:block;font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .track .info small{color:var(--muted);font-size:11.5px}
+  .track .dur{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .note{
+    margin-top:18px;font-size:11.5px;line-height:1.6;color:#5f6880;
+    border-left:2px solid #2a2f45;padding-left:12px;
+  }
+  @media(max-width:820px){
+    .app{grid-template-columns:1fr}
+    .player{position:static}
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <section class="player">
+    <div class="art" id="art"><span class="glyph" id="glyph">♪</span></div>
+
+    <div class="meta">
+      <h1 id="title">Neon Drift</h1>
+      <p id="artist">Sonify Synth · Synthwave</p>
+    </div>
+
+    <canvas id="viz" width="600" height="120"></canvas>
+
+    <input type="range" class="seek" id="seek" min="0" max="1000" value="0" aria-label="Seek" />
+    <div class="times"><span id="cur">0:00</span><span id="dur">0:00</span></div>
+
+    <div class="controls">
+      <button class="ctrl" id="shuffle" title="Shuffle" aria-label="Shuffle">⤨</button>
+      <button class="ctrl" id="prev" title="Previous" aria-label="Previous track">⏮</button>
+      <button class="play" id="play" aria-label="Play">▶</button>
+      <button class="ctrl" id="next" title="Next" aria-label="Next track">⏭</button>
+      <button class="ctrl" id="repeat" title="Repeat" aria-label="Repeat">⟳</button>
+    </div>
+
+    <div class="volume">
+      <span>🔈</span>
+      <input type="range" id="vol" min="0" max="100" value="70" aria-label="Volume" />
+      <span id="volLabel">70</span>
+    </div>
+  </section>
+
+  <section class="side">
+    <h2>Playlist · 4 tracks</h2>
+    <div class="list" id="list"></div>
+    <p class="note">
+      Every track is generated live with the Web Audio API — small synthesised melodies,
+      so the player needs no audio files and works offline. Volume, seek, shuffle and
+      repeat all act on the same audio graph, and the bar display is a live frequency
+      spectrum from an AnalyserNode.
+    </p>
+  </section>
+</div>
+
+<script>
+/* =========================================================
+   Track data — MIDI note number + length in beats.
+   69 = A4 (440 Hz). Everything else is synthesised at runtime.
+   ========================================================= */
+const TRACKS = [
+  {
+    title: "Neon Drift", artist: "Sonify Synth", mood: "Synthwave",
+    bpm: 104, wave: "sawtooth", colors: ["#8b5cf6", "#ff5d8f"],
+    melody: [
+      [69,1],[72,1],[76,1],[74,1],[72,1],[76,2],
+      [77,1],[76,1],[74,1],[72,1],[69,2],
+      [72,1],[74,1],[76,1],[79,1],[77,2],
+      [76,1],[74,1],[72,1],[69,3]
+    ]
+  },
+  {
+    title: "Paper Planes", artist: "Sonify Synth", mood: "Lo-fi",
+    bpm: 82, wave: "triangle", colors: ["#22d3ee", "#3b82f6"],
+    melody: [
+      [64,2],[67,1],[69,1],[71,2],[69,1],[67,1],
+      [64,2],[62,1],[64,1],[67,3],
+      [69,1],[71,1],[72,1],[71,1],[69,2],
+      [67,1],[64,1],[62,1],[64,3]
+    ]
+  },
+  {
+    title: "Glass Garden", artist: "Sonify Synth", mood: "Ambient",
+    bpm: 70, wave: "sine", colors: ["#34d399", "#22d3ee"],
+    melody: [
+      [76,2],[79,2],[81,2],[79,2],
+      [76,2],[74,2],[72,4],
+      [74,2],[76,2],[79,2],[81,2],
+      [83,2],[81,2],[79,4]
+    ]
+  },
+  {
+    title: "Midnight Metro", artist: "Sonify Synth", mood: "House",
+    bpm: 124, wave: "square", colors: ["#f59e0b", "#ef4444"],
+    melody: [
+      [57,1],[57,1],[64,1],[57,1],[60,1],[57,1],[64,1],[62,1],
+      [57,1],[57,1],[64,1],[57,1],[67,1],[64,1],[60,1],[62,1],
+      [57,2],[64,1],[60,1],[62,2],[57,2],
+      [64,1],[62,1],[60,1],[57,1],[55,2],[57,2]
+    ]
+  }
+];
+
+/* ---------- audio graph ---------- */
+let ctx = null, master = null, analyser = null, freqData = null;
+let scheduled = [];
+let playing = false;
+let state = { index: 0, offset: 0, startedAt: 0, total: 0 };
+let shuffle = false, repeat = false;
+let rafId = null;
+
+const $ = id => document.getElementById(id);
+const art = $("art"), glyph = $("glyph");
+const titleEl = $("title"), artistEl = $("artist");
+const seek = $("seek"), curEl = $("cur"), durEl = $("dur");
+const playBtn = $("play"), listEl = $("list");
+const vol = $("vol"), volLabel = $("volLabel");
+const viz = $("viz"), vctx = viz.getContext("2d");
+
+const midiToFreq = m => 440 * Math.pow(2, (m - 69) / 12);
+const fmt = s => {
+  if (!Number.isFinite(s) || s < 0) s = 0;
+  const m = Math.floor(s / 60), sec = Math.floor(s % 60);
+  return m + ":" + String(sec).padStart(2, "0");
+};
+
+function ensureContext(){
+  if (ctx) return;
+  ctx = new (window.AudioContext || window.webkitAudioContext)();
+  master = ctx.createGain();
+  master.gain.value = vol.value / 100;
+  analyser = ctx.createAnalyser();
+  analyser.fftSize = 128;
+  freqData = new Uint8Array(analyser.frequencyBinCount);
+  master.connect(analyser);
+  analyser.connect(ctx.destination);
+}
+
+/* Turn a melody into a timeline of notes plus the total duration. */
+function buildTimeline(track){
+  const beat = 60 / track.bpm;
+  let t = 0;
+  const notes = [];
+  track.melody.forEach(([note, beats]) => {
+    const dur = beats * beat;
+    notes.push({ note, time: t, dur });
+    t += dur;
+  });
+  return { notes, total: t };
+}
+
+function clearScheduled(){
+  scheduled.forEach(osc => {
+    try { osc.stop(); } catch {}
+    try { osc.disconnect(); } catch {}
+  });
+  scheduled = [];
+}
+
+/* Schedule every remaining note from `offset` seconds onwards. */
+function scheduleFrom(offset){
+  ensureContext();
+  clearScheduled();
+
+  const track = TRACKS[state.index];
+  const { notes, total } = buildTimeline(track);
+  const now = ctx.currentTime;
+
+  notes.forEach(n => {
+    const endsAt = n.time + n.dur;
+    if (endsAt <= offset) return;
+
+    const startAt = now + Math.max(0, n.time - offset);
+    const dur = n.dur - Math.max(0, offset - n.time);
+    if (dur <= 0.02) return;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = track.wave;
+    osc.frequency.value = midiToFreq(n.note);
+
+    gain.gain.setValueAtTime(0.0001, startAt);
+    gain.gain.linearRampToValueAtTime(0.24, startAt + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, startAt + dur * 0.96);
+
+    osc.connect(gain).connect(master);
+    osc.start(startAt);
+    osc.stop(startAt + dur);
+    scheduled.push(osc);
+  });
+
+  state.offset = offset;
+  state.startedAt = now;
+  state.total = total;
+}
+
+function elapsed(){
+  if (!ctx) return state.offset;
+  return state.offset + (ctx.currentTime - state.startedAt);
+}
+
+/* ---------- transport ---------- */
+async function play(){
+  ensureContext();
+  if (ctx.state === "suspended") { await ctx.resume(); }
+  if (!playing){
+    scheduleFrom(state.offset >= state.total ? 0 : state.offset);
+    playing = true;
+    playBtn.textContent = "⏸";
+    playBtn.setAttribute("aria-label", "Pause");
+    loop();
+  }
+}
+
+async function pause(){
+  if (!playing) return;
+  state.offset = elapsed();
+  playing = false;
+  playBtn.textContent = "▶";
+  playBtn.setAttribute("aria-label", "Play");
+  cancelAnimationFrame(rafId);
+  if (ctx && ctx.state === "running") await ctx.suspend();
+}
+
+function toggle(){
+  playing ? pause() : play();
+}
+
+function loadTrack(index, autoplay){
+  const wasPlaying = playing;
+  playing = false;
+  cancelAnimationFrame(rafId);
+  if (ctx && ctx.state === "running") ctx.suspend();
+  clearScheduled();
+
+  state.index = index;
+  state.offset = 0;
+  const track = TRACKS[index];
+
+  titleEl.textContent = track.title;
+  artistEl.textContent = track.artist + " · " + track.mood;
+  art.style.background = `linear-gradient(140deg, ${track.colors[0]}, ${track.colors[1]})`;
+  glyph.textContent = ["♪", "♫", "♬", "♩"][index % 4];
+
+  const { total } = buildTimeline(track);
+  durEl.textContent = fmt(total);
+  curEl.textContent = "0:00";
+  seek.value = 0;
+  paintList();
+
+  playBtn.textContent = "▶";
+  if (autoplay || wasPlaying) play();
+  else drawIdle();
+}
+
+function nextTrack(auto){
+  if (shuffle){
+    let n = state.index;
+    while (TRACKS.length > 1 && n === state.index) n = Math.floor(Math.random() * TRACKS.length);
+    return loadTrack(n, true);
+  }
+  const isLast = state.index === TRACKS.length - 1;
+  if (auto && isLast && !repeat){
+    playing = false;
+    loadTrack(0, false);
+    return;
+  }
+  loadTrack((state.index + 1) % TRACKS.length, true);
+}
+
+function prevTrack(){
+  loadTrack((state.index - 1 + TRACKS.length) % TRACKS.length, playing);
+}
+
+/* ---------- progress + visualiser loop ---------- */
+function loop(){
+  rafId = requestAnimationFrame(loop);
+
+  const e = elapsed();
+  const total = state.total || 1;
+  seek.value = Math.min(1000, Math.round((e / total) * 1000));
+  curEl.textContent = fmt(e);
+
+  drawSpectrum();
+
+  if (e >= total - 0.05){
+    if (repeat) { scheduleFrom(0); }
+    else { nextTrack(true); }
+  }
+}
+
+function drawSpectrum(){
+  if (!analyser) return drawIdle();
+  analyser.getByteFrequencyData(freqData);
+  const w = viz.width, h = viz.height;
+  vctx.clearRect(0, 0, w, h);
+  const bars = 42;
+  const gap = 3;
+  const barW = (w - gap * (bars - 1)) / bars;
+
+  for (let i = 0; i < bars; i++){
+    const v = freqData[i * 2] / 255;
+    const barH = Math.max(2, v * h);
+    const x = i * (barW + gap);
+    const grad = vctx.createLinearGradient(0, h, 0, h - barH);
+    grad.addColorStop(0, TRACKS[state.index].colors[0]);
+    grad.addColorStop(1, TRACKS[state.index].colors[1]);
+    vctx.fillStyle = grad;
+    vctx.beginPath();
+    vctx.roundRect(x, h - barH, barW, barH, 3);
+    vctx.fill();
+  }
+}
+
+function drawIdle(){
+  const w = viz.width, h = viz.height;
+  vctx.clearRect(0, 0, w, h);
+  vctx.fillStyle = "#252a3d";
+  const bars = 42, gap = 3, barW = (w - gap * (bars - 1)) / bars;
+  for (let i = 0; i < bars; i++){
+    vctx.beginPath();
+    vctx.roundRect(i * (barW + gap), h - 4, barW, 4, 2);
+    vctx.fill();
+  }
+}
+
+/* ---------- playlist UI ---------- */
+function paintList(){
+  listEl.innerHTML = "";
+  TRACKS.forEach((t, i) => {
+    const { total } = buildTimeline(t);
+    const row = document.createElement("div");
+    row.className = "track" + (i === state.index ? " active" : "");
+    row.innerHTML = `
+      <span class="num">${i === state.index ? "▶" : i + 1}</span>
+      <span class="info"><b>${t.title}</b><small>${t.artist} · ${t.mood}</small></span>
+      <span class="dur">${fmt(total)}</span>
+    `;
+    row.addEventListener("click", () => loadTrack(i, true));
+    listEl.appendChild(row);
+  });
+}
+
+/* ---------- wiring ---------- */
+playBtn.addEventListener("click", toggle);
+$("next").addEventListener("click", () => nextTrack(false));
+$("prev").addEventListener("click", prevTrack);
+
+$("shuffle").addEventListener("click", e => {
+  shuffle = !shuffle;
+  e.currentTarget.classList.toggle("on", shuffle);
+});
+
+$("repeat").addEventListener("click", e => {
+  repeat = !repeat;
+  e.currentTarget.classList.toggle("on", repeat);
+});
+
+seek.addEventListener("input", () => {
+  const pct = seek.value / 1000;
+  const target = pct * (state.total || 0);
+  state.offset = target;
+  if (playing){
+    ensureContext();
+    scheduleFrom(target);
+  } else {
+    curEl.textContent = fmt(target);
+  }
+});
+
+vol.addEventListener("input", () => {
+  volLabel.textContent = vol.value;
+  if (master) master.gain.value = vol.value / 100;
+});
+
+document.addEventListener("keydown", e => {
+  if (e.target.tagName === "INPUT") return;
+  if (e.code === "Space") { e.preventDefault(); toggle(); }
+  if (e.key === "ArrowRight") nextTrack(false);
+  if (e.key === "ArrowLeft") prevTrack();
+});
+
+loadTrack(0, false);
+</script>
+</body>
+</html>
