@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Harshitha Thummala · Portfolio</title>
+<style>
+  :root{
+    --bg:#f7f8fc;
+    --surface:#ffffff;
+    --text:#111827;
+    --muted:#5b6478;
+    --line:#e4e8f0;
+    --accent:#5b4bff;
+    --accent-soft:#eeebff;
+    --shadow:0 24px 60px -34px rgba(17,24,39,.35);
+  }
+  body.dark{
+    --bg:#0b0d14;
+    --surface:#131722;
+    --text:#eef1f8;
+    --muted:#98a1b8;
+    --line:#232a3a;
+    --accent:#8b7dff;
+    --accent-soft:#1c1a33;
+    --shadow:0 24px 60px -34px #000;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font-family:"Segoe UI",system-ui,-apple-system,sans-serif;
+    line-height:1.65;transition:background .3s, color .3s;
+  }
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+
+  /* nav */
+  nav{
+    position:sticky;top:0;z-index:30;
+    background:color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter:blur(14px);border-bottom:1px solid var(--line);
+  }
+  .nav-in{display:flex;align-items:center;justify-content:space-between;height:66px}
+  .logo{font-weight:700;letter-spacing:-.01em;font-size:16px}
+  .logo span{color:var(--accent)}
+  .links{display:flex;gap:6px;align-items:center}
+  .links a{
+    padding:8px 13px;border-radius:9px;font-size:14px;color:var(--muted);transition:.18s;
+  }
+  .links a:hover{color:var(--text);background:var(--accent-soft)}
+  .icon-btn{
+    border:1px solid var(--line);background:var(--surface);color:var(--text);
+    width:38px;height:38px;border-radius:10px;cursor:pointer;font-size:15px;
+    display:grid;place-items:center;transition:.18s;
+  }
+  .icon-btn:hover{border-color:var(--accent);color:var(--accent)}
+  .burger{display:none}
+
+  /* hero */
+  .hero{padding:76px 0 56px;display:grid;grid-template-columns:1.35fr .9fr;gap:44px;align-items:center}
+  .pill{
+    display:inline-flex;align-items:center;gap:8px;font-size:12.5px;
+    background:var(--accent-soft);color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 30%, transparent);
+    padding:6px 13px;border-radius:999px;margin-bottom:18px;font-weight:600;
+  }
+  .pill i{width:7px;height:7px;border-radius:50%;background:var(--accent);display:inline-block}
+  .hero h1{
+    margin:0 0 14px;font-size:clamp(32px,5.4vw,52px);line-height:1.06;letter-spacing:-.03em;
+  }
+  .hero h1 em{font-style:normal;color:var(--accent)}
+  .hero p{color:var(--muted);font-size:16.5px;max-width:46ch;margin:0 0 26px}
+  .cta{display:flex;gap:12px;flex-wrap:wrap}
+  .btn{
+    padding:12px 22px;border-radius:11px;font-size:14.5px;font-weight:600;
+    border:1px solid transparent;cursor:pointer;transition:.2s;font-family:inherit;
+    display:inline-block;
+  }
+  .btn.primary{background:var(--accent);color:#fff;box-shadow:0 14px 30px -16px var(--accent)}
+  .btn.primary:hover{transform:translateY(-2px)}
+  .btn.ghost{border-color:var(--line);background:var(--surface);color:var(--text)}
+  .btn.ghost:hover{border-color:var(--accent);color:var(--accent)}
+
+  .card-avatar{
+    background:var(--surface);border:1px solid var(--line);border-radius:22px;
+    padding:26px;box-shadow:var(--shadow);text-align:center;
+  }
+  .avatar{
+    width:104px;height:104px;border-radius:50%;margin:0 auto 16px;
+    display:grid;place-items:center;font-size:38px;font-weight:700;color:#fff;
+    background:linear-gradient(135deg,var(--accent),#ff6f91);
+  }
+  .card-avatar h3{margin:0 0 3px;font-size:17px}
+  .card-avatar small{color:var(--muted);font-size:13px}
+  .stats{display:flex;justify-content:space-around;margin-top:20px;padding-top:18px;border-top:1px solid var(--line)}
+  .stats div{font-size:12px;color:var(--muted)}
+  .stats b{display:block;font-size:19px;color:var(--text);line-height:1.3}
+
+  /* sections */
+  section{padding:64px 0;scroll-margin-top:80px}
+  .sec-head{margin-bottom:34px}
+  .sec-head span{
+    font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);font-weight:700;
+  }
+  .sec-head h2{margin:8px 0 8px;font-size:clamp(24px,3.4vw,32px);letter-spacing:-.02em}
+  .sec-head p{margin:0;color:var(--muted);max-width:60ch}
+
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+  .panel{
+    background:var(--surface);border:1px solid var(--line);border-radius:18px;
+    padding:24px;box-shadow:var(--shadow);
+  }
+  .panel h3{margin:0 0 12px;font-size:16px}
+  .panel p{margin:0;color:var(--muted);font-size:14.5px}
+
+  .skill{margin-bottom:16px}
+  .skill:last-child{margin-bottom:0}
+  .skill .row{display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:7px}
+  .skill .row b{font-weight:600}
+  .skill .row small{color:var(--muted)}
+  .bar{height:7px;border-radius:99px;background:var(--line);overflow:hidden}
+  .bar i{
+    display:block;height:100%;width:0;border-radius:99px;
+    background:linear-gradient(90deg,var(--accent),#ff6f91);
+    transition:width 1s cubic-bezier(.2,.8,.2,1);
+  }
+
+  .projects{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}
+  .proj{
+    background:var(--surface);border:1px solid var(--line);border-radius:18px;
+    padding:22px;transition:.22s;display:flex;flex-direction:column;gap:10px;
+  }
+  .proj:hover{transform:translateY(-4px);border-color:var(--accent);box-shadow:var(--shadow)}
+  .proj .tag{
+    align-self:flex-start;font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--accent);background:var(--accent-soft);padding:4px 10px;border-radius:99px;font-weight:700;
+  }
+  .proj h4{margin:0;font-size:16.5px}
+  .proj p{margin:0;color:var(--muted);font-size:14px;flex:1}
+  .proj .go{font-size:13.5px;font-weight:600;color:var(--accent)}
+
+  .contact{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+  form{display:flex;flex-direction:column;gap:12px}
+  label{font-size:12.5px;color:var(--muted);font-weight:600}
+  input,textarea{
+    width:100%;padding:11px 13px;border-radius:10px;font-family:inherit;font-size:14px;
+    border:1px solid var(--line);background:var(--bg);color:var(--text);outline:none;
+    transition:.18s;margin-top:5px;
+  }
+  input:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  textarea{resize:vertical;min-height:104px}
+  .toast{
+    position:fixed;bottom:26px;left:50%;transform:translate(-50%,26px);
+    background:var(--text);color:var(--bg);padding:12px 22px;border-radius:11px;
+    font-size:14px;opacity:0;pointer-events:none;transition:.3s;z-index:60;font-weight:600;
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+  .reveal{opacity:0;transform:translateY(18px);transition:.6s ease}
+  .reveal.in{opacity:1;transform:none}
+  footer{border-top:1px solid var(--line);padding:26px 0;color:var(--muted);font-size:13px}
+  footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+  @media(max-width:860px){
+    .hero{grid-template-columns:1fr;padding:48px 0 40px}
+    .grid-2,.contact{grid-template-columns:1fr}
+    .links{display:none}
+    .links.open{
+      display:flex;flex-direction:column;position:absolute;top:66px;left:0;right:0;
+      background:var(--surface);border-bottom:1px solid var(--line);padding:12px;gap:4px;
+    }
+    .burger{display:grid}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav-in">
+    <div class="logo">Harshitha<span>.</span></div>
+    <div class="links" id="links">
+      <a href="#about">About</a>
+      <a href="#skills">Skills</a>
+      <a href="#projects">Projects</a>
+      <a href="#contact">Contact</a>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="icon-btn" id="theme" aria-label="Toggle dark mode">🌙</button>
+      <button class="icon-btn burger" id="burger" aria-label="Menu">☰</button>
+    </div>
+  </div>
+</nav>
+
+<header class="wrap hero">
+  <div>
+    <span class="pill"><i></i> Open to internship opportunities</span>
+    <h1>Hi, I'm Harshitha —<br />I build <em>clean, fast</em> web interfaces.</h1>
+    <p>
+      Front-end developer and Computer Science student. I enjoy turning ideas into
+      responsive, accessible interfaces — from small utilities to full gallery and
+      audio experiences. This site is one of my internship projects.
+    </p>
+    <div class="cta">
+      <a class="btn primary" href="#projects">View projects</a>
+      <a class="btn ghost" href="mailto:harshithat0729@gmail.com">Get in touch</a>
+    </div>
+  </div>
+
+  <aside class="card-avatar">
+    <div class="avatar">HT</div>
+    <h3>Harshitha Thummala</h3>
+    <small>Front-end Developer · India</small>
+    <div class="stats">
+      <div><b>4</b>Projects</div>
+      <div><b>3</b>Internships</div>
+      <div><b>2026</b>Graduating</div>
+    </div>
+  </aside>
+</header>
+
+<section id="about" class="wrap">
+  <div class="sec-head reveal">
+    <span>About</span>
+    <h2>A little about how I work</h2>
+    <p>I like small, well-structured pieces of code that do one thing properly.</p>
+  </div>
+  <div class="grid-2">
+    <div class="panel reveal">
+      <h3>The short version</h3>
+      <p>
+        I work mostly with HTML, CSS and vanilla JavaScript, and I care about the details
+        people feel rather than notice: keyboard support, sensible focus states, layouts
+        that don't break at 360px, and animations that stay out of the way. I'm currently
+        building out my internship project set and learning more about the React ecosystem.
+      </p>
+    </div>
+    <div class="panel reveal">
+      <h3>What I'm looking for</h3>
+      <p>
+        A front-end internship where I can ship real interfaces with a team that reviews
+        code carefully. I'm comfortable picking up an existing codebase, and I document as
+        I go — every project here has a README explaining what it does and why.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section id="skills" class="wrap">
+  <div class="sec-head reveal">
+    <span>Skills</span>
+    <h2>Tools I reach for</h2>
+  </div>
+  <div class="grid-2">
+    <div class="panel reveal">
+      <div class="skill"><div class="row"><b>HTML &amp; CSS</b><small>Advanced</small></div><div class="bar"><i data-w="92%"></i></div></div>
+      <div class="skill"><div class="row"><b>JavaScript (ES6+)</b><small>Advanced</small></div><div class="bar"><i data-w="86%"></i></div></div>
+      <div class="skill"><div class="row"><b>Responsive &amp; accessible UI</b><small>Strong</small></div><div class="bar"><i data-w="84%"></i></div></div>
+    </div>
+    <div class="panel reveal">
+      <div class="skill"><div class="row"><b>Python</b><small>Intermediate</small></div><div class="bar"><i data-w="74%"></i></div></div>
+      <div class="skill"><div class="row"><b>Git &amp; GitHub</b><small>Intermediate</small></div><div class="bar"><i data-w="78%"></i></div></div>
+      <div class="skill"><div class="row"><b>React (learning)</b><small>Beginner</small></div><div class="bar"><i data-w="48%"></i></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="projects" class="wrap">
+  <div class="sec-head reveal">
+    <span>Projects</span>
+    <h2>Things I've built</h2>
+    <p>All four live in this repository — open them straight from here.</p>
+  </div>
+  <div class="projects">
+    <a class="proj reveal" href="image-gallery.html">
+      <span class="tag">Project 01</span>
+      <h4>Image Gallery</h4>
+      <p>Responsive masonry gallery with category filters, a full-screen lightbox and keyboard navigation.</p>
+      <span class="go">Open project →</span>
+    </a>
+    <a class="proj reveal" href="calcio.html">
+      <span class="tag">Project 02</span>
+      <h4>Calcio Calculator</h4>
+      <p>Keyboard-first calculator with live expression preview and a clickable calculation history.</p>
+      <span class="go">Open project →</span>
+    </a>
+    <a class="proj reveal" href="sonify.html">
+      <span class="tag">Project 03</span>
+      <h4>Sonify Music Player</h4>
+      <p>A player whose tracks are synthesised live with the Web Audio API, plus a live spectrum display.</p>
+      <span class="go">Open project →</span>
+    </a>
+    <a class="proj reveal" href="#contact">
+      <span class="tag">Project 04</span>
+      <h4>This Portfolio</h4>
+      <p>This page — dark mode, scroll reveal, animated skill bars and a validated contact form.</p>
+      <span class="go">You're here →</span>
+    </a>
+  </div>
+</section>
+
+<section id="contact" class="wrap">
+  <div class="sec-head reveal">
+    <span>Contact</span>
+    <h2>Let's talk</h2>
+    <p>The fastest way to reach me is email — I usually reply within a day.</p>
+  </div>
+  <div class="contact">
+    <div class="panel reveal">
+      <h3>Direct</h3>
+      <p style="margin-bottom:14px">
+        Email: <a href="mailto:harshithat0729@gmail.com" style="color:var(--accent);font-weight:600">harshithat0729@gmail.com</a><br />
+        GitHub: <a href="https://github.com/harshithat0729-dev" style="color:var(--accent);font-weight:600">@harshithat0729-dev</a>
+      </p>
+      <p>Based in India · open to remote internships.</p>
+    </div>
+    <form class="panel reveal" id="form" novalidate>
+      <div>
+        <label for="name">Name</label>
+        <input id="name" name="name" type="text" placeholder="Your name" required />
+      </div>
+      <div>
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" placeholder="you@example.com" required />
+      </div>
+      <div>
+        <label for="msg">Message</label>
+        <textarea id="msg" name="msg" placeholder="Say hello…" required></textarea>
+      </div>
+      <button class="btn primary" type="submit">Send message</button>
+    </form>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Harshitha Thummala</span>
+    <span>Built with plain HTML, CSS and JavaScript.</span>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---- theme ---- */
+const body = document.body;
+const themeBtn = document.getElementById("theme");
+const saved = localStorage.getItem("portfolio-theme");
+if (saved === "dark") { body.classList.add("dark"); themeBtn.textContent = "☀️"; }
+
+themeBtn.addEventListener("click", () => {
+  body.classList.toggle("dark");
+  const dark = body.classList.contains("dark");
+  themeBtn.textContent = dark ? "☀️" : "🌙";
+  localStorage.setItem("portfolio-theme", dark ? "dark" : "light");
+});
+
+/* ---- mobile menu ---- */
+const links = document.getElementById("links");
+document.getElementById("burger").addEventListener("click", () => links.classList.toggle("open"));
+links.addEventListener("click", e => { if (e.target.tagName === "A") links.classList.remove("open"); });
+
+/* ---- scroll reveal + skill bars ---- */
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (!entry.isIntersecting) return;
+    entry.target.classList.add("in");
+    entry.target.querySelectorAll(".bar i").forEach(bar => {
+      bar.style.width = bar.dataset.w;
+    });
+    observer.unobserve(entry.target);
+  });
+}, { threshold: 0.18 });
+
+document.querySelectorAll(".reveal").forEach(el => observer.observe(el));
+
+/* ---- contact form ---- */
+const toast = document.getElementById("toast");
+function showToast(text){
+  toast.textContent = text;
+  toast.classList.add("show");
+  clearTimeout(showToast.t);
+  showToast.t = setTimeout(() => toast.classList.remove("show"), 2800);
+}
+
+document.getElementById("form").addEventListener("submit", e => {
+  e.preventDefault();
+  const name = e.target.name.value.trim();
+  const email = e.target.email.value.trim();
+  const msg = e.target.msg.value.trim();
+
+  if (!name || !msg) return showToast("Please fill in your name and message.");
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return showToast("That email doesn't look right.");
+
+  showToast("Thanks, " + name + "! This demo form doesn't send yet.");
+  e.target.reset();
+});
+</script>
+</body>
+</html>
