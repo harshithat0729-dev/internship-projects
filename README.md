@@ -85,6 +85,8 @@ maths tools, and an AI tutor chat panel beside it.
     full answer. The key is typed into the input field at runtime and is **never stored or
     bundled in the file** — reload the page and it is gone.
 - The tutor is context-aware: it is told the current expression and the last answer.
+- An **AI Tutor in Claude** button at the top of the tutor panel opens the full tutor
+  (the Claude artifact) in a new tab, for the complete step-by-step answers.
 
 **How it works**
 
@@ -213,7 +215,8 @@ internship-projects/
 
 - The gallery loads its photos live from Wikimedia Commons, so it needs a connection; all
   images remain the property of their original Commons uploaders.
-- Calcio's AI tutor works offline from its FAQ knowledge base. A live answer needs your own
-  Anthropic API key, entered at runtime and never saved in the file.
+- Calcio's AI tutor works offline from its FAQ knowledge base. The full tutor opens through
+  the **AI Tutor in Claude** button (the Claude artifact link), and a live in-page answer
+  needs your own Anthropic API key, entered at runtime and never saved in the file.
 - Sonify keeps your music in the browser's IndexedDB — it never leaves your device, and
   clearing site data clears the library.
